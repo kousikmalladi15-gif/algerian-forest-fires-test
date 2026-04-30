@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Weather Predictor | Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #0f172a;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.5rem;
+        }
+        /* Style for both Inputs and Selects to match Image 1 */
+        .form-control {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 1rem 1.25rem;
+            border-radius: 0.75rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .form-control:focus {
+            border-color: #3b82f6;
+            outline: none;
+            background: rgba(15, 23, 42, 0.8);
+        }
+        /* Custom Arrow for Dropdowns like Image 2 */
+        .select-wrapper {
+            position: relative;
+        }
+        .select-wrapper::after {
+            content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.25rem;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        select { appearance: none; cursor: pointer; }
+        select option { background: #1e293b; color: white; }
+    </style>
+</head>
+<body class="p-8 md:p-16">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Return Link -->
+        <div class="mb-10">
+            <a href="{{ url_for('index') }}" class="text-blue-400 hover:text-blue-300 flex items-center gap-3 text-lg font-medium transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Return to Dashboard
+            </a>
+        </div>
+
+        <div class="glass-panel p-10 md:p-12 shadow-2xl">
+            <h1 class="text-4xl font-bold mb-10 tracking-tight">Input Parameters</h1>
+            
+            <form action="{{ url_for('predict_datapoint') }}" method="post">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                    
+                    <!-- Left Column: Meteorological -->
+                    <div class="space-y-6">
+                        <h2 class="text-blue-500 font-bold uppercase tracking-widest text-sm">Meteorological Data</h2>
+                        
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2">Temperature (°C)</label>
+                            <input type="number" step="any" name="Temperature" placeholder="e.g. 28.5" required class="form-control">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2">Relative Humidity (%)</label>
+                            <input type="number" step="any" name="RH" placeholder="e.g. 45" required class="form-control">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2">Wind Speed (km/h)</label>
+                            <input type="number" step="any" name="Ws" placeholder="e.g. 15" required class="form-control">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2">Rain (mm)</label>
+                            <input type="number" step="any" name="Rain" placeholder="e.g. 0.2" required class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Indices & Selection -->
+                    <div class="space-y-6">
+                        <h2 class="text-emerald-500 font-bold uppercase tracking-widest text-sm">Fire Indices & Classification</h2>
+                        
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2">FFMC Index</label>
+                            <input type="number" step="any" name="FFMC" placeholder="e.g. 85.1" required class="form-control">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2">DMC Index</label>
+                            <input type="number" step="any" name="DMC" placeholder="e.g. 12.4" required class="form-control">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-400 text-sm mb-2">ISI Index</label>
+                            <input type="number" step="any" name="ISI" placeholder="e.g. 4.1" required class="form-control">
+                        </div>
+                        
+                        <!-- Dropdowns from Image 2 -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-400 text-sm mb-2">Fire Status</label>
+                                <div class="select-wrapper">
+                                    <select name="Classes" required class="form-control">
+                                        <option value="not fire">No Fire</option>
+                                        <option value="fire">Fire</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-400 text-sm mb-2">Region</label>
+                                <div class="select-wrapper">
+                                    <select name="Region" required class="form-control">
+                                        <option value="Bejaia">Bejaia</option>
+                                        <option value="Sidi-Bel">Sidi-Bel Abbes</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button and Metric Cards (Optional from home) -->
+                <div class="mt-12">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-5 rounded-xl transition-all shadow-lg text-lg transform hover:-translate-y-1">
+                        Run Prediction Analysis
+                    </button>
+                    
+                    {% if result is not none %}
+                    <div class="mt-8 p-6 glass-panel border-blue-500/30 flex justify-between items-center">
+                        <span class="text-gray-400 uppercase tracking-widest font-bold text-sm">Prediction Result</span>
+                        <span class="text-4xl font-black text-blue-400">{{ result }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
